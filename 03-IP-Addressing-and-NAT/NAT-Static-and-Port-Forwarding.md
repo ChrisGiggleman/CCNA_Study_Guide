@@ -49,3 +49,49 @@ R1(config-if)# exit
 
 ! Static inside NAT mapping
 R1(config)# ip nat inside source static 192.168.10.10 209.165.200.226
+
+```
+R1# show ip nat translations
+Pro  Inside local      Inside global       Outside local      Outside global
+---  192.168.10.10     209.165.200.226     ---                ---
+
+Port Forwarding (Static NAT with Ports)
+
+Port forwarding maps:
+
+Inside local IP + port → Inside global IP + port.
+
+This lets Internet clients access an inside server using the border router’s public IP and a chosen port.
+
+Use Case
+
+Web server inside:
+
+Local: 192.168.10.254:80
+
+NAT device public IP:
+
+209.165.200.226
+
+You want users to access: http://209.165.200.226:8080
+
+Mapping:
+
+192.168.10.254:80 ↔ 209.165.200.226:8080
+
+Outside clients think they are talking to the router on port 8080; NAT forwards traffic to the real web server on port 80.
+
+Port Forwarding – IOS Example
+
+! Inside / outside as before
+R1(config)# interface g0/0
+R1(config-if)# ip address 192.168.10.1 255.255.255.0
+R1(config-if)# ip nat inside
+
+R1(config)# interface g0/1
+R1(config-if)# ip address 209.165.200.226 255.255.255.248
+R1(config-if)# ip nat outside
+
+! Port forwarding for HTTP (TCP 8080 outside → TCP 80 inside)
+R1(config)# ip nat inside source static tcp 192.168.10.254 80 209.165.200.226 8080
+
